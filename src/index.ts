@@ -19,9 +19,10 @@ const htmlContent = `
             <h1>Sign in</h1>
             <p>Empower your experience, sign in to your account.</p>
             <form id="loginForm">
+                <!-- [DIUBAH] Input Email menjadi Nomor Telepon -->
                 <div class="input-group">
-                    <label for="loginEmail">Email Address*</label>
-                    <input type="email" id="loginEmail" required>
+                    <label for="loginPhone">Nomor Telepon*</label>
+                    <input type="tel" id="loginPhone" placeholder="cth. 081234567890" required>
                 </div>
                 <div class="input-group">
                     <label for="loginPassword">Password*</label>
@@ -42,9 +43,10 @@ const htmlContent = `
                     <label for="signUpName">Your Name*</label>
                     <input type="text" id="signUpName" required>
                 </div>
+                <!-- [DIUBAH] Input Email menjadi Nomor Telepon -->
                 <div class="input-group">
-                    <label for="signUpEmail">Email Address*</label>
-                    <input type="email" id="signUpEmail" placeholder="ex.email@domain.com" required>
+                    <label for="signUpPhone">Nomor Telepon*</label>
+                    <input type="tel" id="signUpPhone" placeholder="cth. 081234567890" required>
                 </div>
                 <div class="input-group">
                     <label for="signUpPassword">Password*</label>
@@ -597,7 +599,47 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- Sidebar, Auth, Chat Management ---
     const checkLoginStatus = () => { const loggedInUser = localStorage.getItem('lunar_currentUser'); if (loggedInUser) { currentUser = JSON.parse(loggedInUser); const firstName = currentUser.name.split(' ')[0]; welcomeUserTitle.textContent = \`Good day, \${firstName}!\`; currentSystemInstruction = getSystemInstruction(firstName); showApp(); loadSettings(); loadConversations(); } else { showAuth(); } };
-    let isSidebarOpen = false, isSidebarAnimating = false; const animationDuration = 300; const openSidebar = () => { if (isSidebarOpen || isSidebarAnimating) return; isSidebarAnimating = true; document.body.classList.add('sidebar-is-open'); isSidebarOpen = true; setTimeout(() => { isSidebarAnimating = false; }, animationDuration); }; const closeSidebar = () => { if (!isSidebarOpen || isSidebarAnimating) return; isSidebarAnimating = true; document.body.classList.remove('sidebar-is-open'); isSidebarOpen = false; setTimeout(() => { isSidebarAnimating = false; }, animationDuration); }; const toggleSidebar = () => { isSidebarOpen ? closeSidebar() : openSidebar(); }; const showApp = () => { document.body.classList.remove('state-auth'); document.body.classList.add('state-app'); }; const showAuth = () => { document.body.classList.remove('state-app'); document.body.classList.add('state-auth'); }; showSignUp.addEventListener('click', (e) => { e.preventDefault(); loginBox.style.display = 'none'; signUpBox.style.display = 'block'; }); showLogin.addEventListener('click', (e) => { e.preventDefault(); signUpBox.style.display = 'none'; loginBox.style.display = 'block'; }); signUpForm.addEventListener('submit', (e) => { e.preventDefault(); const name = document.getElementById('signUpName').value, email = document.getElementById('signUpEmail').value, password = document.getElementById('signUpPassword').value; const users = JSON.parse(localStorage.getItem('lunar_users') || '{}'); if (users[email]) { alert('User already exists!'); return; } users[email] = { name, password }; localStorage.setItem('lunar_users', JSON.stringify(users)); currentUser = { name, email }; localStorage.setItem('lunar_currentUser', JSON.stringify(currentUser)); checkLoginStatus(); }); loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('loginEmail').value, password = document.getElementById('loginPassword').value; const users = JSON.parse(localStorage.getItem('lunar_users') || '{}'); const user = users[email]; if (user && user.password === password) { currentUser = { name: user.name, email }; localStorage.setItem('lunar_currentUser', JSON.stringify(currentUser)); checkLoginStatus(); } else { alert('Invalid email or password.'); } }); const setActiveConversation = (id) => { document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active')); if (id) { const activeItem = document.querySelector(\`.conversation-item[data-id='\${id}']\`); if (activeItem) activeItem.classList.add('active'); } }; newChatBtn.addEventListener('click', () => { currentChatId = null; chatMessages.innerHTML = ''; welcomeScreen.style.display = 'flex'; messageInput.disabled = false; sendButton.disabled = false; setActiveConversation(null); closeSidebar(); clearImagePreview(); }); clearAllBtn.addEventListener('click', () => { if (confirm('Are you sure you want to clear all conversations? This action cannot be undone.')) { conversations = {}; saveConversations(); renderConversationsList(); newChatBtn.click(); } });
+    let isSidebarOpen = false, isSidebarAnimating = false; const animationDuration = 300; const openSidebar = () => { if (isSidebarOpen || isSidebarAnimating) return; isSidebarAnimating = true; document.body.classList.add('sidebar-is-open'); isSidebarOpen = true; setTimeout(() => { isSidebarAnimating = false; }, animationDuration); }; const closeSidebar = () => { if (!isSidebarOpen || isSidebarAnimating) return; isSidebarAnimating = true; document.body.classList.remove('sidebar-is-open'); isSidebarOpen = false; setTimeout(() => { isSidebarAnimating = false; }, animationDuration); }; const toggleSidebar = () => { isSidebarOpen ? closeSidebar() : openSidebar(); }; const showApp = () => { document.body.classList.remove('state-auth'); document.body.classList.add('state-app'); }; const showAuth = () => { document.body.classList.remove('state-app'); document.body.classList.add('state-auth'); }; showSignUp.addEventListener('click', (e) => { e.preventDefault(); loginBox.style.display = 'none'; signUpBox.style.display = 'block'; }); showLogin.addEventListener('click', (e) => { e.preventDefault(); signUpBox.style.display = 'none'; loginBox.style.display = 'block'; });
+    
+    // [DIUBAH] Logika pendaftaran menggunakan Nomor Telepon
+    signUpForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signUpName').value;
+        const phone = document.getElementById('signUpPhone').value; // Mengambil nomor telepon
+        const password = document.getElementById('signUpPassword').value;
+        const users = JSON.parse(localStorage.getItem('lunar_users') || '{}');
+        
+        if (users[phone]) { // Cek jika nomor telepon sudah ada
+            alert('User with this phone number already exists!');
+            return;
+        }
+        
+        users[phone] = { name, password }; // Simpan dengan key nomor telepon
+        localStorage.setItem('lunar_users', JSON.stringify(users));
+        
+        currentUser = { name, phone }; // Buat sesi pengguna dengan nomor telepon
+        localStorage.setItem('lunar_currentUser', JSON.stringify(currentUser));
+        checkLoginStatus();
+    });
+
+    // [DIUBAH] Logika login menggunakan Nomor Telepon
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const phone = document.getElementById('loginPhone').value; // Mengambil nomor telepon
+        const password = document.getElementById('loginPassword').value;
+        const users = JSON.parse(localStorage.getItem('lunar_users') || '{}');
+        const user = users[phone]; // Cari pengguna berdasarkan nomor telepon
+        
+        if (user && user.password === password) {
+            currentUser = { name: user.name, phone }; // Buat sesi pengguna dengan nomor telepon
+            localStorage.setItem('lunar_currentUser', JSON.stringify(currentUser));
+            checkLoginStatus();
+        } else {
+            alert('Invalid phone number or password.');
+        }
+    });
+
+    const setActiveConversation = (id) => { document.querySelectorAll('.conversation-item').forEach(item => item.classList.remove('active')); if (id) { const activeItem = document.querySelector(\`.conversation-item[data-id='\${id}']\`); if (activeItem) activeItem.classList.add('active'); } }; newChatBtn.addEventListener('click', () => { currentChatId = null; chatMessages.innerHTML = ''; welcomeScreen.style.display = 'flex'; messageInput.disabled = false; sendButton.disabled = false; setActiveConversation(null); closeSidebar(); clearImagePreview(); }); clearAllBtn.addEventListener('click', () => { if (confirm('Are you sure you want to clear all conversations? This action cannot be undone.')) { conversations = {}; saveConversations(); renderConversationsList(); newChatBtn.click(); } });
     const loadChat = (id) => { currentChatId = id; chatMessages.innerHTML = ''; welcomeScreen.style.display = 'none'; const conversation = conversations[id]; conversation.forEach(msg => createMessageFromHistory(msg)); setActiveConversation(id); closeSidebar(); };
     
     // --- Message UI & Animations ---
@@ -669,9 +711,11 @@ document.addEventListener('DOMContentLoaded', () => {
             p.innerHTML = processText(remainingText);
         }
     }
+    
+    // [DIUBAH] Menyimpan percakapan menggunakan Nomor Telepon sebagai kunci
+    const saveConversations = () => { try { if(currentUser && currentUser.phone) localStorage.setItem(\`lunar_conversations_\${currentUser.phone}\`, JSON.stringify(conversations)); } catch (e) { console.error("Failed to save conversations:", e); alert("Gagal menyimpan percakapan. Kemungkinan memori penuh."); } };
+    const loadConversations = () => { if(currentUser && currentUser.phone) conversations = JSON.parse(localStorage.getItem(\`lunar_conversations_\${currentUser.phone}\`) || '{}'); renderConversationsList(); };
 
-    const saveConversations = () => { try { localStorage.setItem(\`lunar_conversations_\${currentUser.email}\`, JSON.stringify(conversations)); } catch (e) { console.error("Failed to save conversations:", e); alert("Gagal menyimpan percakapan. Kemungkinan memori penuh."); } };
-    const loadConversations = () => { conversations = JSON.parse(localStorage.getItem(\`lunar_conversations_\${currentUser.email}\`) || '{}'); renderConversationsList(); };
     const renderConversationsList = () => { conversationsList.innerHTML = ''; Object.keys(conversations).forEach(id => { const conversation = conversations[id]; const firstUserMessage = conversation.find(msg => msg.role === 'user'); if (firstUserMessage) { const item = document.createElement('div'); item.classList.add('conversation-item'); const firstTextPart = firstUserMessage.parts.find(p => p.text); item.textContent = (firstTextPart?.text || "Image Prompt").substring(0, 30) + '...'; item.dataset.id = id; item.onclick = () => loadChat(id); conversationsList.prepend(item); } }); setActiveConversation(currentChatId); };
     const extractBase64Data = (dataUrl) => { const parts = dataUrl.split(','); const mimeType = parts[0].match(/:(.*?);/)[1]; const data = parts[1]; return { mimeType, data }; };
 
@@ -690,7 +734,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateImageWithGemini = async (history, retries = 0) => { if (retries >= apiKeys.length) throw new Error("Semua kunci API gagal."); const apiKey = apiKeys[currentApiKeyIndex]; const modelId = "gemini-2.0-flash-preview-image-generation"; const apiUrl = \`https://generativelanguage.googleapis.com/v1beta/models/\${modelId}:generateContent?key=\${apiKey}\`; const lastUserMessage = history.filter(m => m.role === 'user').pop(); if (!lastUserMessage) throw new Error("Tidak ada prompt pengguna untuk generasi gambar."); const userTextPart = lastUserMessage.parts.find(p => p.text); const userImageParts = lastUserMessage.parts.filter(p => p.inline_data); if (!userTextPart && userImageParts.length === 0) { throw new Error("Prompt harus berisi teks atau gambar."); } const finalParts = []; const stylePrefix = "ini adalah system instruction: namamu adalah Lunar A.I+ dan ini adalah prompt dari user: "; const userText = userTextPart ? userTextPart.text : ''; finalParts.push({ "text": stylePrefix + userText }); userImageParts.forEach(imgPart => finalParts.push(imgPart)); const requestBody = { "contents": [{ "role": "user", "parts": finalParts }], "generationConfig": { "responseModalities": ["IMAGE", "TEXT"] } }; try { const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); const responseData = await response.json(); if (!response.ok) { if (responseData.error && [400, 403, 429].includes(response.status)) { currentApiKeyIndex = (currentApiKeyIndex + 1) % apiKeys.length; return generateImageWithGemini(history, retries + 1); } throw new Error(responseData.error?.message || \`HTTP error! Status: \${response.status}\`); } const candidate = responseData.candidates?.[0]; if (candidate && candidate.finishReason && candidate.finishReason !== "STOP") { throw new Error(\`Maaf, respons gambar diblokir (Alasan: \${candidate.finishReason}).\`); } const parts = candidate?.content?.parts || []; const imagePart = parts.find(part => part.inlineData?.mimeType === "image/png"); const textPart = parts.find(part => part.text); const imageUrl = imagePart ? \`data:image/png;base64,\${imagePart.inlineData.data}\` : null; const textResponse = textPart ? textPart.text : null; return { imageUrl, textResponse }; } catch (error) { console.error("Gemini Image Gen Error:", error); throw error; } };
     const displayGeneratedImage = (container, imageUrl) => { container.classList.remove('loading'); container.textContent = ''; const img = document.createElement('img'); img.src = imageUrl; img.alt = "Generated by AI"; img.className = "generated-image"; img.onload = () => img.classList.add('loaded'); const downloadBtn = document.createElement('button'); downloadBtn.className = "download-btn"; downloadBtn.title = "Download Image"; downloadBtn.innerHTML = \`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>\`; downloadBtn.addEventListener('click', (e) => { e.stopPropagation(); downloadImage(imageUrl); }); container.appendChild(img); container.appendChild(downloadBtn); };
     const downloadImage = (imageUrl) => { try { if (window.AndroidInterface && typeof window.AndroidInterface.downloadImageFromBase64 === 'function') { const base64Data = imageUrl.split(',')[1]; const fileName = \`lunar-ai-image-\${Date.now()}.png\`; window.AndroidInterface.downloadImageFromBase64(base64Data, fileName); } else { throw new Error("Android interface not available."); } } catch (e) { console.error('Download failed:', e); alert('Gagal mengunduh gambar. Fitur ini hanya tersedia di aplikasi Android.'); } };
-    const saveSettings = () => { const newName = userNameSetting.value; currentUser.name = newName; const users = JSON.parse(localStorage.getItem('lunar_users')); users[currentUser.email].name = newName; localStorage.setItem('lunar_users', JSON.stringify(users)); localStorage.setItem('lunar_currentUser', JSON.stringify(currentUser)); userNameDisplay.textContent = newName; currentSystemInstruction = getSystemInstruction(newName.split(' ')[0]); localStorage.setItem('lunar_model', modelSetting.value); currentChatMode = document.querySelector('input[name="chatMode"]:checked').value; localStorage.setItem('lunar_chatMode', currentChatMode); if (themeToggle.checked) { localStorage.setItem('lunar_theme', 'dark'); document.documentElement.classList.add('dark-theme'); } else { localStorage.setItem('lunar_theme', 'light'); document.documentElement.classList.remove('dark-theme'); } settingsModal.classList.remove('visible'); };
+    
+    // [DIUBAH] Logika penyimpanan pengaturan disesuaikan
+    const saveSettings = () => {
+        const newName = userNameSetting.value;
+        currentUser.name = newName;
+        const users = JSON.parse(localStorage.getItem('lunar_users'));
+        users[currentUser.phone].name = newName; // Gunakan currentUser.phone
+        localStorage.setItem('lunar_users', JSON.stringify(users));
+        localStorage.setItem('lunar_currentUser', JSON.stringify(currentUser));
+        userNameDisplay.textContent = newName;
+        currentSystemInstruction = getSystemInstruction(newName.split(' ')[0]);
+        localStorage.setItem('lunar_model', modelSetting.value);
+        currentChatMode = document.querySelector('input[name="chatMode"]:checked').value;
+        localStorage.setItem('lunar_chatMode', currentChatMode);
+        if (themeToggle.checked) {
+            localStorage.setItem('lunar_theme', 'dark');
+            document.documentElement.classList.add('dark-theme');
+        } else {
+            localStorage.setItem('lunar_theme', 'light');
+            document.documentElement.classList.remove('dark-theme');
+        }
+        settingsModal.classList.remove('visible');
+    };
+
     const toggleModelSelectorState = () => { const selectedMode = document.querySelector('input[name="chatMode"]:checked').value; const modelSettingItem = modelSetting.closest('.setting-item'); if (selectedMode === 'image') { modelSetting.disabled = true; modelSettingItem.classList.add('disabled'); attachFileBtn.style.display = 'block'; } else { modelSetting.disabled = false; modelSettingItem.classList.remove('disabled'); attachFileBtn.style.display = 'block'; } };
     const loadSettings = () => { const name = currentUser.name; userNameDisplay.textContent = name; userNameSetting.value = name; const model = localStorage.getItem('lunar_model'); if (model) modelSetting.value = model; const chatMode = localStorage.getItem('lunar_chatMode') || 'standard'; currentChatMode = chatMode; document.querySelector(\`input[name="chatMode"][value="\${chatMode}"]\`).checked = true; const theme = localStorage.getItem('lunar_theme'); if (theme === 'dark') { document.documentElement.classList.add('dark-theme'); themeToggle.checked = true; } else { document.documentElement.classList.remove('dark-theme'); themeToggle.checked = false; } toggleModelSelectorState(); };
     const renderImagePreviews = () => { imagePreviewContainer.innerHTML = ''; stagedImageDataUrls.forEach((dataUrl, index) => { const item = document.createElement('div'); item.className = 'preview-item'; const img = document.createElement('img'); img.src = dataUrl; img.className = 'preview-thumbnail'; const btn = document.createElement('button'); btn.className = 'remove-preview-btn'; btn.innerHTML = '&times;'; btn.onclick = () => removeStagedImage(index); item.appendChild(img); item.appendChild(btn); imagePreviewContainer.appendChild(item); }); if (stagedImageDataUrls.length > 0) { imagePreviewContainer.classList.add('visible'); welcomeScreen.style.display = 'none'; } else { imagePreviewContainer.classList.remove('visible'); } };
